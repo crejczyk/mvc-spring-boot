@@ -1,13 +1,15 @@
 package com.softmill.springboot.mvcspringboot.controller;
 
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +21,17 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.softmill.springboot.mvcspringboot.event.RefreshTweetsEvent;
 import com.softmill.springboot.mvcspringboot.model.Tweet;
 import com.softmill.springboot.mvcspringboot.repository.TweetRepository;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
 @RestController
 public class TweetController {
 
+private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+	 
 	@Autowired
 	private TweetRepository tweetRepository;
 
@@ -73,8 +79,33 @@ public class TweetController {
 	}
 
 
-/*	@GetMapping(value = "/stream/tweets", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Tweet streamAllTweets() {
-		return tweetRepository.findAll().delayElements(Duration.ofMillis(100));
-	}*/
+	@GetMapping(value = "/stream/tweets")
+	public SseEmitter streamAllTweets(HttpServletResponse response) {
+		response.setHeader("Cache-Control", "no-store");
+
+		SseEmitter emitter = new SseEmitter();
+		// SseEmitter emitter = new SseEmitter(180_000L);
+
+		this.emitters.add(emitter);
+
+		emitter.onCompletion(() -> this.emitters.remove(emitter));
+		emitter.onTimeout(() -> this.emitters.remove(emitter));
+
+		return emitter;
+	}
+	
+	@EventListener
+	public void onRefreshTweets(RefreshTweetsEvent refreshTweetsEvent) {
+	    List<SseEmitter> deadEmitters = new ArrayList<>();
+	    this.emitters.forEach(emitter -> {
+	      try {
+	        emitter.send(refreshTweetsEvent.getList());
+	      }
+	      catch (Exception e) {
+	        deadEmitters.add(emitter);
+	      }
+	    });
+
+	    this.emitters.removeAll(deadEmitters);
+	  }
 }
