@@ -1,5 +1,9 @@
 # mvc-spring-boot
-[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
+
+[![Build Status](https://travis-ci.org/crejczyk/mvc-spring-boot.svg?branch=master)](https://travis-ci.org/crejczyk/mvc-spring-boot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.softmill.springboot%3Amvc-spring-boot&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.softmill.springboot%3Amvc-spring-boot)
+[![Coverage Status](https://sonarcloud.io/api/project_badges/measure?project=com.softmill.springboot%3Amvc-spring-boot&metric=coverage)](https://sonarcloud.io/dashboard?id=com.softmill.springboot%3Amvc-spring-boot)
 
 ## Requirements
 
@@ -13,12 +17,16 @@
 - `docker volume create --name=mongodata` 
 - `docker run -d -p 27017:27017 -v mongodata:/data/db mongo`
 
-
 ```bash
 mvn spring-boot:run
 ```
-
 The server will start at <http://localhost:8080>.
+
+## Code coverage report
+
+```bash
+mvn jacoco:report
+```
 
 ## Exploring the Rest API
 
