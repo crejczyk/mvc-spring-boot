@@ -11,7 +11,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,11 +19,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.softmill.springboot.mvcspringboot.event.RefreshTweetsEvent;
 import com.softmill.springboot.mvcspringboot.model.Tweet;
 import com.softmill.springboot.mvcspringboot.repository.TweetRepository;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
 @RestController
@@ -82,10 +81,7 @@ private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayLi
 	@GetMapping(value = "/stream/tweets")
 	public SseEmitter streamAllTweets(HttpServletResponse response) {
 		response.setHeader("Cache-Control", "no-store");
-
 		SseEmitter emitter = new SseEmitter();
-		// SseEmitter emitter = new SseEmitter(180_000L);
-
 		this.emitters.add(emitter);
 
 		emitter.onCompletion(() -> this.emitters.remove(emitter));

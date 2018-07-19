@@ -34,6 +34,6 @@ public class LoadDatabase {
 		for (String tweet : tweets) {
 			tweetRepository.save(new Tweet(tweet));
 		}
-		log.info("done initialization...");
+		log.info("Done initialization...");
 	}
 }
